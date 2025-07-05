@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Classificador de Qualidade do Vinho</title>
+</head>
+<body>
+    <h2>Insira os atributos do vinho</h2>
+    <form id="wine-form">
+        <div id="inputs"></div>
+        <button type="submit">Prever Qualidade</button>
+    </form>
+    <h3 id="result"></h3>
+
+    <script>
+        const campos = [
+            'Fixed Acidity', 'Volatile Acidity', 'Citric Acid', 'Residual Sugar',
+            'Chlorides', 'Free Sulfur Dioxide', 'Total Sulfur Dioxide', 'Density',
+            'pH', 'Sulphates', 'Alcohol'
+        ];
+
+        const inputsDiv = document.getElementById('inputs');
+        campos.forEach((campo, i) => {
+            const input = document.createElement('input');
+            input.placeholder = campo;
+            input.type = 'number';
+            input.step = 'any';
+            input.name = i;
+            inputsDiv.appendChild(input);
+            inputsDiv.appendChild(document.createElement('br'));
+        });
+
+        document.getElementById('wine-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inputs = [...document.querySelectorAll('input')];
+            const values = inputs.map(input => parseFloat(input.value));
+
+            const response = await fetch('http://127.0.0.1:5000/predict', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ features: values })
+            });
+
+            const result = await response.json();
+            document.getElementById('result').innerText = 'Qualidade prevista: ' + result.prediction;
+        });
+    </script>
+</body>
+</html>
