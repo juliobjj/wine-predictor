@@ -6,8 +6,31 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import pytest
 
+from schemas.wine_input import WineInput
+
 # Threshold de desempenho mínimo
 MIN_F1_SCORE = 0.60
+
+def test_wine_input_valid():
+    data = {
+        "features": [7.4, 0.7, 0.0, 1.9, 0.076, 11.0, 34.0, 0.9978, 3.51, 0.56, 9.4]
+    }
+    obj = WineInput(**data)
+    assert len(obj.features) == 11
+
+def test_wine_input_invalid_length():
+    data = {
+        "features": [7.4, 0.7, 0.0]  # menos que 11
+    }
+    with pytest.raises(Exception):
+        WineInput(**data)
+
+def test_wine_input_invalid_type():
+    data = {
+        "features": [7.4, "abc", 0.0, 1.9, 0.076, 11.0, 34.0, 0.9978, 3.51, 0.56, 9.4]
+    }
+    with pytest.raises(Exception):
+        WineInput(**data)
 
 @pytest.fixture
 def data():
