@@ -1,13 +1,12 @@
-# Criar ambiente virtual
+# Wine Quality Predictor 🍷
 
-cd backend
-python3 -m venv venv
-source venv/bin/activate # Linux/macOS
-venv\Scripts\activate # Windows
+Este projeto faz predições de qualidade de vinho com base em atributos químicos, utilizando modelos de machine learning treinados com Scikit-Learn.
 
-# Como Instalar Dependências
-
-pip install -r ../requirements.txt
+## Tecnologias
+- Python + Flask
+- Scikit-Learn
+- Pytest
+- Front-end com HTML/JS simples
 
 # Como Executar Testes
 
@@ -15,6 +14,14 @@ python -m pytest -s tests/test_model_quality.py
 
 # Inicie o back-end:
 
-python app.py
+```bash
+# cria ambiente virtual
+python -m venv venv
+source venv/bin/activate  # ou venv\Scripts\activate no Windows
 
-Abra o arquivo ../frontend/index.html no navegador.
+
+# instala dependências
+pip install -r requirements.txt
+
+# roda a aplicação
+python app.py
