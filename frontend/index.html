@@ -3,47 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <title>Classificador de Qualidade do Vinho</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>Insira os atributos do vinho</h2>
-    <form id="wine-form">
-        <div id="inputs"></div>
-        <button type="submit">Prever Qualidade</button>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h2 class="mb-4">Classificador de Qualidade do Vinho</h2>
+
+    <form id="wine-form" class="mb-4">
+        <div class="row" id="inputs"></div>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Prever Qualidade</button>
+            <button type="button" class="btn btn-secondary" id="clear-btn">Limpar</button>
+        </div>
     </form>
-    <h3 id="result"></h3>
 
-    <script>
-        const campos = [
-            'Fixed Acidity', 'Volatile Acidity', 'Citric Acid', 'Residual Sugar',
-            'Chlorides', 'Free Sulfur Dioxide', 'Total Sulfur Dioxide', 'Density',
-            'pH', 'Sulphates', 'Alcohol'
-        ];
+    <h4 id="result" class="text-success mb-4"></h4>
 
-        const inputsDiv = document.getElementById('inputs');
-        campos.forEach((campo, i) => {
-            const input = document.createElement('input');
-            input.placeholder = campo;
-            input.type = 'number';
-            input.step = 'any';
-            input.name = i;
-            inputsDiv.appendChild(input);
-            inputsDiv.appendChild(document.createElement('br'));
+    <h5>Histórico de Vinhos Cadastrados</h5>
+    <table class="table table-bordered table-striped mt-3" id="wine-table">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Álcool</th>
+                <th>Acidez Fixa</th>
+                <th>Volátil</th>
+                <th>Cítrico</th>
+                <th>Açúcar</th>
+                <th>Cloretos</th>
+                <th>SO₂ Livre</th>
+                <th>SO₂ Total</th>
+                <th>Densidade</th>
+                <th>pH</th>
+                <th>Sulfatos</th>
+                <th>Qualidade</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    const campos = [
+        'Fixed Acidity', 'Volatile Acidity', 'Citric Acid', 'Residual Sugar',
+        'Chlorides', 'Free Sulfur Dioxide', 'Total Sulfur Dioxide', 'Density',
+        'pH', 'Sulphates', 'Alcohol'
+    ];
+
+    const inputsDiv = document.getElementById('inputs');
+    const defaultValues = [7.4, 0.7, 0.0, 1.9, 0.076, 11.0, 34.0, 0.9978, 3.51, 0.56, 9.4];
+
+    campos.forEach((campo, i) => {
+        const div = document.createElement('div');
+        div.className = 'col-md-4 mb-3';
+
+        const label = document.createElement('label');
+        label.innerText = campo;
+        label.className = 'form-label';
+
+        const input = document.createElement('input');
+        input.placeholder = campo;
+        input.type = 'number';
+        input.step = 'any';
+        input.name = i;
+        input.className = 'form-control';
+        input.value = defaultValues[i];
+
+        div.appendChild(label);
+        div.appendChild(input);
+        inputsDiv.appendChild(div);
+    });
+
+    document.getElementById('wine-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const inputs = [...document.querySelectorAll('input')];
+        const values = inputs.map(input => parseFloat(input.value));
+
+        if (values.some(v => isNaN(v))) {
+            alert("Todos os campos devem ser preenchidos com valores numéricos.");
+            return;
+        }
+
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ features: values })
         });
 
-        document.getElementById('wine-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const inputs = [...document.querySelectorAll('input')];
-            const values = inputs.map(input => parseFloat(input.value));
+        const result = await response.json();
+        //document.getElementById('result').innerText = 'Qualidade prevista: ' + result.prediction;
 
-            const response = await fetch('http://127.0.0.1:5000/predict', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ features: values })
+        // Atualiza tabela após submissão
+        fetchSamples();
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        document.querySelectorAll('input').forEach(input => input.value = '');
+        document.getElementById('result').innerText = '';
+    });
+
+    function colorirQualidade() {
+        document.querySelectorAll('#wine-table td.quality').forEach(td => {
+            const value = Number(td.textContent);
+            td.classList.remove('text-danger', 'text-success'); // limpa classes antigas
+            if (value < 6) {
+                td.classList.add('text-danger');
+            } else if (value > 6) {
+                td.classList.add('text-success');
+            }
+            // valor 6 fica sem classe (padrão)
+        });
+    }
+
+    async function fetchSamples() {
+        const tableBody = document.querySelector("#wine-table tbody");
+        tableBody.innerHTML = "";
+
+        try {
+            const res = await fetch("http://127.0.0.1:5000/samples");
+            const samples = await res.json();
+
+            samples.forEach((sample, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${sample.alcohol}</td>
+                    <td>${sample.fixed_acidity}</td>
+                    <td>${sample.volatile_acidity}</td>
+                    <td>${sample.citric_acid}</td>
+                    <td>${sample.residual_sugar}</td>
+                    <td>${sample.chlorides}</td>
+                    <td>${sample.free_sulfur_dioxide}</td>
+                    <td>${sample.total_sulfur_dioxide}</td>
+                    <td>${sample.density}</td>
+                    <td>${sample.ph}</td>
+                    <td>${sample.sulphates}</td>
+                    <td class="quality">${sample.predicted_quality}</td>
+                `;
+                tableBody.appendChild(row);
             });
 
-            const result = await response.json();
-            document.getElementById('result').innerText = 'Qualidade prevista: ' + result.prediction;
-        });
-    </script>
+            colorirQualidade();  // <-- chama aqui depois de preencher tabela
+
+        } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+        }
+    }
+
+    // Carrega os dados ao abrir a página
+    window.onload = fetchSamples;
+</script>
 </body>
 </html>

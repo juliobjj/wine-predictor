@@ -1,12 +1,18 @@
 from flask import Flask
 from flask_cors import CORS
-from routes.predict import predict_route
-import subprocess
 
+from routes.predict import router
+from database import Base, engine
+
+# Inicialização
 app = Flask(__name__)
 CORS(app)
-app.register_blueprint(predict_route)
+
+# Cria as tabelas no banco
+Base.metadata.create_all(bind=engine)
+
+# Registra o blueprint
+app.register_blueprint(router)
 
 if __name__ == '__main__':
-    print("Iniciando aplicação...")
     app.run(debug=True)

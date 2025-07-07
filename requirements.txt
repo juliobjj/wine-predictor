@@ -1,7 +1,8 @@
 Flask
-joblib
-numpy
-scikit-learn==1.6.1
 flask-cors
+numpy
+joblib
+pydantic
+scikit-learn==1.6.1
 pytest
-pandas
+sqlalchemy
