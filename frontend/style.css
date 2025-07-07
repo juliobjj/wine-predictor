@@ -1,0 +1,22 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.campo {
+    margin-bottom: 12px;
+}
+
+.campo label {
+    display: inline-block;
+    width: 270px;
+}
+
+#descricao {
+    max-width: 800px;
+    margin-bottom: 25px;
+}
+
+button {
+    margin-right: 10px;
+}
